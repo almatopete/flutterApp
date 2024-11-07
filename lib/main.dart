@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pokemon_service.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,72 +15,118 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final PokemonService _pokemonService = PokemonService();
+
+  Map<String, dynamic>? _pokemonData;
+  String? _error;
+
+  void _fetchPokemon() async {
+    final pokemonName = _controller.text.toLowerCase();
+
+    try {
+      final data = await _pokemonService.fetchPokemon(pokemonName);
+      setState(() {
+        _pokemonData = data;
+        _error = null;
+      });
+    } catch (e) {
+      setState(() {
+        _pokemonData = null;
+        _error = 'Error: Could not find Pokémon';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background Image
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/background.jpg'), // Add your image in assets
-                fit: BoxFit.cover,
+      appBar: AppBar(
+        title: Text('Pokémon Finder'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Enter Pokémon name',
+                border: OutlineInputBorder(),
               ),
             ),
-          ),
-
-          // Overlay with content
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // App Name at the top
-              Padding(
-                padding: const EdgeInsets.only(top: 80.0),
-                child: Text(
-                  'My Flutter App',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 4.0,
-                        color: Colors.black45,
-                        offset: Offset(2, 2),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _fetchPokemon,
+              child: Text('Search'),
+            ),
+            SizedBox(height: 10),
+            if (_error != null) 
+              Text(_error!, style: TextStyle(color: Colors.red)),
+            if (_pokemonData != null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Nombre del Pokémon
+                      Expanded(
+                        child: Text(
+                          _pokemonData!['name'].toString().toUpperCase(),
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      // Imagen del Pokémon
+                      Image.network(
+                        _pokemonData!['sprites']['front_default'],
+                        height: 80,
+                        width: 80,
                       ),
                     ],
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+                  SizedBox(height: 10),
 
-              Spacer(), // To push content down
+                  // Altura y Peso
+                  Text('Height: ${_pokemonData!['height']}'),
+                  Text('Weight: ${_pokemonData!['weight']}'),
 
-              // Welcome Message
-              Center(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(8),
+                  SizedBox(height: 10),
+
+                  // Habilidades
+                  Text(
+                    'Abilities',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  child: Text(
-                    'Hello World, Welcome to Flutter!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white,
+                  for (var ability in _pokemonData!['abilities'])
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: Text('- ${ability['ability']['name']}'),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
 
-              Spacer(), // To push content up from bottom
-            ],
-          ),
-        ],
+                  SizedBox(height: 10),
+
+                  // Estadísticas
+                  Text(
+                    'Stats',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  for (var stat in _pokemonData!['stats'])
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: Text('${stat['stat']['name']}: ${stat['base_stat']}'),
+                    ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
