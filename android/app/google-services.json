@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "465326757288",
+    "project_id": "pokemon-ca507",
+    "storage_bucket": "pokemon-ca507.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:465326757288:android:0f2ebddc06ad110b10799d",
+        "android_client_info": {
+          "package_name": "com.pokemon.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhYWqLOyw5ROCpwXfHNEVXTeprRDMzSvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
